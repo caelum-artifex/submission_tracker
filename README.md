@@ -1,3 +1,7 @@
+## Demo Video
+
+[Screen Recording](https://screenrec.com/share/rf2e7uxLjY)
+
 # Submission Tracker - Completed Solution
 
 This repository contains a completed implementation of the Submission Tracker take-home challenge using:
