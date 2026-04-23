@@ -217,24 +217,30 @@ export default function SubmissionsContent() {
   return (
     <Container maxWidth="xl" sx={{ py: 5 }}>
       <Stack spacing={4}>
-        <Box display="flex" justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} gap={2}>
-          <Typography variant="h4" component="h1" fontWeight={700}>
-            Submissions
+        <Box>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems={{ xs: 'flex-start', sm: 'center' }}
+            gap={2}
+          >
+            <Typography variant="h4" component="h1" fontWeight={700}>
+              Submissions
+            </Typography>
+            <Chip
+              label={submissionsQuery.data ? `${submissionsQuery.data.count} total` : 'Loading...'}
+              color="primary"
+              variant="outlined"
+              size="small"
+            />
+          </Box>
+          <Typography color="text.secondary" mt={0.5}>
+            Browse and filter incoming broker-submitted opportunities.
           </Typography>
-          <Chip
-            label={submissionsQuery.data ? `${submissionsQuery.data.count} total` : 'Loading...'}
-            color="primary"
-            variant="outlined"
-            size="small"
-          />
+          <Typography variant="caption" color="text.secondary" mt={0.25} display="block">
+            Tip: click any row to open the full submission details.
+          </Typography>
         </Box>
-        <Typography color="text.secondary" mt={0.5}>
-          Browse and filter incoming broker-submitted opportunities.
-        </Typography>
-        <Typography variant="caption" color="text.secondary" mt={0.25} display="block">
-          Tip: click any row to open the full submission details.
-        </Typography>
-      </Box>
 
       {/* Filter bar */}
       <Card variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>

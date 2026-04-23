@@ -47,12 +47,12 @@ const PRIORITY_COLORS: Record<string, 'error' | 'warning' | 'default'> = {
 
 function SectionHeader({ title, count }: { title: string; count?: number }) {
   return (
-    <Box display="flex" alignItems="center" gap={1} mb={2}>
+    <Box display="flex" alignItems="center" justifyContent="space-between" gap={1} mb={2}>
       <Typography variant="h6" fontWeight={600}>
         {title}
       </Typography>
       {count !== undefined && (
-        <Chip label={count} size="small" sx={{ height: 20, fontSize: 12 }} />
+        <Chip label={count} size="small" color="primary" variant="outlined" sx={{ height: 22, fontSize: 12 }} />
       )}
     </Box>
   );
@@ -60,7 +60,15 @@ function SectionHeader({ title, count }: { title: string; count?: number }) {
 
 function ContactCard({ contact }: { contact: Contact }) {
   return (
-    <Card variant="outlined" sx={{ height: '100%' }}>
+    <Card
+      variant="outlined"
+      sx={{
+        height: '100%',
+        borderRadius: 2,
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        '&:hover': { transform: 'translateY(-2px)', boxShadow: 2 },
+      }}
+    >
       <CardContent>
         <Stack spacing={1}>
           <Box display="flex" alignItems="center" gap={1}>
@@ -235,7 +243,7 @@ export default function SubmissionDetailPage() {
                       )}
                     </Stack>
                   </Box>
-                  <Stack direction="row" spacing={1} alignItems="center">
+                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                     <Chip
                       label={STATUS_LABELS[submission.status]}
                       color={STATUS_COLORS[submission.status]}
@@ -251,7 +259,7 @@ export default function SubmissionDetailPage() {
                 <Divider sx={{ my: 2 }} />
 
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                       BROKER
                     </Typography>
@@ -262,7 +270,7 @@ export default function SubmissionDetailPage() {
                       </MuiLink>
                     )}
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                       OWNER
                     </Typography>
@@ -271,7 +279,7 @@ export default function SubmissionDetailPage() {
                       {submission.owner.email}
                     </MuiLink>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                       CREATED
                     </Typography>
@@ -284,7 +292,7 @@ export default function SubmissionDetailPage() {
                       })}
                     </Typography>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                       LAST UPDATED
                     </Typography>
@@ -298,7 +306,7 @@ export default function SubmissionDetailPage() {
                     </Typography>
                   </Grid>
                   {submission.summary && (
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                       <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                         SUMMARY
                       </Typography>
@@ -315,13 +323,13 @@ export default function SubmissionDetailPage() {
             <Box>
               <SectionHeader title="Contacts" count={submission.contacts.length} />
               {submission.contacts.length === 0 ? (
-                <Typography color="text.secondary" variant="body2">
+                <Typography color="text.secondary" variant="body2" sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
                   No contacts on record for this submission.
                 </Typography>
               ) : (
                 <Grid container spacing={2}>
                   {submission.contacts.map((contact) => (
-                    <Grid key={contact.id} item xs={12} sm={6} md={4}>
+                    <Grid key={contact.id} size={{ xs: 12, sm: 6, md: 4 }}>
                       <ContactCard contact={contact} />
                     </Grid>
                   ))}
@@ -333,11 +341,11 @@ export default function SubmissionDetailPage() {
             <Box>
               <SectionHeader title="Documents" count={submission.documents.length} />
               {submission.documents.length === 0 ? (
-                <Typography color="text.secondary" variant="body2">
+                <Typography color="text.secondary" variant="body2" sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
                   No documents uploaded yet.
                 </Typography>
               ) : (
-                <Card variant="outlined" sx={{ overflow: 'hidden' }}>
+                <Card variant="outlined" sx={{ overflow: 'hidden', borderRadius: 2 }}>
                   {submission.documents.map((doc) => (
                     <DocumentRow key={doc.id} doc={doc} />
                   ))}
@@ -349,11 +357,11 @@ export default function SubmissionDetailPage() {
             <Box>
               <SectionHeader title="Notes" count={submission.notes.length} />
               {submission.notes.length === 0 ? (
-                <Typography color="text.secondary" variant="body2">
+                <Typography color="text.secondary" variant="body2" sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
                   No notes have been added yet.
                 </Typography>
               ) : (
-                <Card variant="outlined" sx={{ px: 2 }}>
+                <Card variant="outlined" sx={{ px: 2, borderRadius: 2 }}>
                   {submission.notes.map((note) => (
                     <NoteItem key={note.id} note={note} />
                   ))}
