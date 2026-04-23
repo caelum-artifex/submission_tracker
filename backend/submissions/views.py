@@ -6,14 +6,17 @@ from submissions.filters.submission import SubmissionFilterSet
 
 
 class SubmissionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = models.Submission.objects.all()
+    queryset = models.Submission.objects.select_related("company", "broker", "owner")
     filterset_class = SubmissionFilterSet
 
     def get_queryset(self):
         queryset = super().get_queryset()
 
         if self.action == "list":
-            latest_note = models.Note.objects.filter(submission_id=OuterRef("pk")).order_by("-created_at")
+            latest_note = (
+                models.Note.objects.filter(submission_id=OuterRef("pk"))
+                .order_by("-created_at")
+            )
             queryset = queryset.annotate(
                 document_count=Count("documents", distinct=True),
                 note_count=Count("notes", distinct=True),
@@ -21,6 +24,8 @@ class SubmissionViewSet(viewsets.ReadOnlyModelViewSet):
                 latest_note_body=Subquery(latest_note.values("body")[:1]),
                 latest_note_created_at=Subquery(latest_note.values("created_at")[:1]),
             )
+        elif self.action == "retrieve":
+            queryset = queryset.prefetch_related("contacts", "documents", "notes")
 
         return queryset
 
@@ -31,6 +36,9 @@ class SubmissionViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class BrokerViewSet(viewsets.ReadOnlyModelViewSet):
+    """Returns all brokers without pagination for use in frontend dropdowns."""
+
     queryset = models.Broker.objects.all()
     serializer_class = serializers.BrokerSerializer
+    pagination_class = None
 
