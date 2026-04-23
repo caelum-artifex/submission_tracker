@@ -1,135 +1,159 @@
-# Submission Tracker Take-home Challenge
+## Demo Video
 
-This repository hosts the boilerplate for the Submission Tracker assignment. It includes a Django +
-Django REST Framework backend and a Next.js frontend scaffold so candidates can focus on API
-design, relational data modelling, and product-focused UI work.
+[Screen Recording](https://screenrec.com/share/rf2e7uxLjY)
 
-## Challenge Overview
+# Submission Tracker - Completed Solution
 
-Operations managers need a workspace to review broker-submitted opportunities. Build a lightweight
-tool that lets them browse incoming submissions, filter by business context, and inspect full
-details per record. Deliver a polished frontend experience backed by clean APIs.
+This repository contains a completed implementation of the Submission Tracker take-home challenge using:
 
-### Goals
+- **Backend:** Django + Django REST Framework
+- **Frontend:** Next.js 16 + React 19 + Material UI + React Query
 
-- **Backend:** Model the domain, expose list and detail endpoints, and support realistic filtering.
-- **Frontend (higher weight):** Craft an intuitive list and detail experience with filters that map
-  to query parameters. Focus on UX clarity, organization, and maintainability.
-
-## Data Model
-
-Required entities (already defined in `submissions/models.py`):
-
-- `Broker`: name, contact email
-- `Company`: legal name, industry, headquarters city
-- `TeamMember`: internal owner for a submission
-- `Submission`: links to company, broker, owner with status, priority, and summary
-- `Contact`: primary contacts for a submission
-- `Document`: references to supporting files
-- `Note`: threaded context for collaboration
-
-Seed data (~25 submissions with dozens of related contacts, documents, and notes) is available via
-`python manage.py seed_submissions`. Re-run with `--force` to rebuild the dataset.
-
-## API Requirements
-
-- `GET /api/submissions/`
-  - Returns paginated submissions with company, broker, owner, counts of related documents/notes,
-    and the latest note preview.
-  - Supports filters via query params. `status` is wired up; extend filters for `brokerId` and
-    `companySearch` (plus optional extras like `createdFrom`, `createdTo`, `hasDocuments`, `hasNotes`).
-- `GET /api/submissions/<id>/`
-  - Returns the full submission plus related contacts, documents, and notes.
-- `GET /api/brokers/`
-  - Returns brokers for the frontend dropdown.
-
-Viewsets, serializers, and base filters are in place but intentionally minimal so you can refine
-the query behavior and filtering logic.
-
-## Frontend Workspace Overview
-
-The Next.js 16 + React 19 app in `frontend/` is pre-wired for this challenge. Material UI handles
-layout, axios powers HTTP requests, and `@tanstack/react-query` is ready for data fetching. The list
-and detail routes under `/submissions` are scaffolded so you can focus on API consumption and UX
-polish.
-
-### What is pre-built?
-
-- Global providers supply Material UI theming and a shared React Query client.
-- `/submissions` hosts the list view with filter inputs and hints about required query params.
-- `/submissions/[id]` hosts the detail shell and links back to the list.
-- Custom hooks in `lib/hooks` define how to fetch submissions and brokers. Each hook is disabled by
-  default (`enabled: false`) so no network requests fire until you enable them.
-
-### What you need to implement
-
-- Wire the filter state to query parameters and React Query `queryFn`s.
-- Render table/card layouts for the submission list along with loading, empty, and error states.
-- Build the detail page sections for summary data, contacts, documents, and notes.
-- Enable the queries and handle pagination or other UX you want to highlight.
-
-## Project Structure
-
-- `backend/`: Django project with REST API, seed command, and submission models.
-- `frontend/`: Next.js app described above.
-- `INTERVIEWER_NOTES.md`: Context for reviewers/interviewers.
-
-## Environment Variables
-
-- Frontend requests default to `http://localhost:8000/api`. Override this by creating
-  `frontend/.env.local` and setting `NEXT_PUBLIC_API_BASE_URL`.
-
-## Getting Started
+## What I Built
 
 ### Backend
 
+Implemented and refined API behavior for a realistic submission review workflow:
+
+- Enhanced `GET /api/submissions/` list response with:
+  - Related broker, company, and owner data
+  - `documentCount` and `noteCount`
+  - `latestNote` preview data
+- Extended filtering support:
+  - `status`
+  - `brokerId`
+  - `companySearch`
+  - `createdFrom`
+  - `createdTo`
+  - `hasDocuments`
+  - `hasNotes`
+- Optimized query access patterns:
+  - `select_related` for list performance
+  - `prefetch_related` for detail retrieval
+- Updated `GET /api/brokers/` to return a flat list (no pagination), suitable for dropdowns.
+
+### Frontend
+
+Built a complete submissions list and detail experience:
+
+- `/submissions` list page:
+  - URL-synced filters (`status`, `brokerId`, `companySearch`, `page`)
+  - Paginated table view
+  - Row click navigation to detail page
+  - Loading, empty, and error states
+  - Visual polish for readability and hierarchy
+- `/submissions/[id]` detail page:
+  - Header summary with status/priority and company metadata
+  - Contacts section
+  - Documents section
+  - Notes timeline
+  - Loading skeletons and section-specific empty states
+
+### Testing
+
+Added targeted backend automated tests covering:
+
+- Broker endpoint shape (`/api/brokers/`)
+- Submission list filters (`status`, `brokerId`, `companySearch`, `hasDocuments`)
+- Submission detail nested payload shape (`contacts`, `documents`, `notes`)
+
+## Approach
+
+I prioritized end-to-end product flow first, then correctness and maintainability:
+
+1. Implemented backend filters and list/detail enrichment so frontend could consume stable data.
+2. Built list page with URL-driven filters and pagination for shareable/searchable state.
+3. Built detail page sections to match operational review needs.
+4. Added focused backend tests for critical API behaviors.
+5. Performed UI/UX improvements for visual clarity and navigation confidence.
+
+## Tradeoffs / Decisions
+
+- Focused tests on backend API contract rather than full frontend integration tests due to scope/time.
+- Used server-side filtering (query params) over client-side filtering to keep data source authoritative and scalable.
+- Kept pagination server-driven to avoid large payload rendering and keep frontend simpler.
+- Implemented practical UI polish (state handling, visual hierarchy, affordances) instead of introducing a heavier design system layer.
+
+## How to Run
+
+### 1) Backend
+
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv
+```
+
+Activate virtual env:
+
+- **Windows (PowerShell)**
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+- **Windows (cmd)**
+
+```cmd
+.venv\Scripts\activate.bat
+```
+
+- **macOS/Linux**
+
+```bash
+source .venv/bin/activate
+```
+
+Install, migrate, seed, test, run:
+
+```bash
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py seed_submissions  # optional but recommended
-# add --force to rebuild the generated sample data
+python manage.py seed_submissions --force
+python manage.py test submissions
 python manage.py runserver 0.0.0.0:8000
 ```
 
-### Frontend
+Backend runs at `http://localhost:8000`.
+
+### 2) Frontend
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local  # create if you want a custom API base
-# NEXT_PUBLIC_API_BASE_URL defaults to http://localhost:8000/api
+```
+
+Create `frontend/.env.local` (optional override):
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
+```
+
+Run dev server:
+
+```bash
 npm run dev
 ```
 
-Visit `http://localhost:3000/submissions` to start building.
+Frontend runs at `http://localhost:3000/submissions`.
 
-## Development Workflow
+## API Summary
 
-1. Start the Django server on port 8000 (`python manage.py runserver`).
-2. Start the Next.js dev server on port 3000 (`npm run dev`).
-3. Iterate on backend filters, serializers, and viewsets, then refresh the frontend to see updated
-   data.
-4. When ready, add README notes summarizing your approach, tradeoffs, and any stretch goals.
+- `GET /api/submissions/`
+  - Paginated list with related broker/company/owner and counts.
+  - Supports filtering via query params.
+- `GET /api/submissions/<id>/`
+  - Full submission detail with contacts/documents/notes.
+- `GET /api/brokers/`
+  - Flat list for dropdown options.
 
-## Submission Instructions
+## Notes
 
-- Provide a short README update summarizing approach, tradeoffs, and how to run the solution.
-- Record and share a brief screen capture (max 2 minutes) demonstrating the frontend working end-to-end with the backend.
-- Call out any stretch goals implemented.
-- Automated tests are optional, but including targeted backend or frontend tests is a strong signal.
+- If using Git Bash + nvm4w and seeing `Illegal instruction` with `npm`, run frontend commands in PowerShell/cmd instead.
+- Backend `.gitignore` excludes local environment/database/cache artifacts.
 
-## Evaluation Rubric
+## Stretch Improvements (If Continuing)
 
-- **Frontend (45%)** – UX clarity, filter UX tied to query params, state/data management, handling
-  of loading/empty/error cases, and overall polish.
-- **Backend (30%)** – API design, serialization choices, filtering implementation, and attention to
-  relational data handling.
-- **Code Quality (15%)** – Structure, naming, documentation/readability, testing where it adds
-  value.
-- **Product Thinking (10%)** – Workflow clarity, assumptions noted, and thoughtful UX details.
-
-## Optional Bonus
-
-Authentication, deployment, or extra tooling are not required but welcome if scope allows.
+- Add date-range and has-notes/has-documents controls to frontend filter UI.
+- Add API serializer/unit tests for annotation fields.
+- Add frontend integration tests for list/filter/detail navigation.
+- Add auth/permissions layer for production readiness.
