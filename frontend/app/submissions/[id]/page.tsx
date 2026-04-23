@@ -251,7 +251,7 @@ export default function SubmissionDetailPage() {
                 <Divider sx={{ my: 2 }} />
 
                 <Grid container spacing={3}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid item xs={12} sm={6}>
                     <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                       BROKER
                     </Typography>
@@ -262,7 +262,7 @@ export default function SubmissionDetailPage() {
                       </MuiLink>
                     )}
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid item xs={12} sm={6}>
                     <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                       OWNER
                     </Typography>
@@ -271,7 +271,7 @@ export default function SubmissionDetailPage() {
                       {submission.owner.email}
                     </MuiLink>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid item xs={12} sm={6}>
                     <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                       CREATED
                     </Typography>
@@ -284,7 +284,7 @@ export default function SubmissionDetailPage() {
                       })}
                     </Typography>
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
+                  <Grid item xs={12} sm={6}>
                     <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                       LAST UPDATED
                     </Typography>
@@ -298,7 +298,7 @@ export default function SubmissionDetailPage() {
                     </Typography>
                   </Grid>
                   {submission.summary && (
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                       <Typography variant="caption" color="text.secondary" fontWeight={600} display="block">
                         SUMMARY
                       </Typography>
@@ -321,7 +321,7 @@ export default function SubmissionDetailPage() {
               ) : (
                 <Grid container spacing={2}>
                   {submission.contacts.map((contact) => (
-                    <Grid key={contact.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                    <Grid key={contact.id} item xs={12} sm={6} md={4}>
                       <ContactCard contact={contact} />
                     </Grid>
                   ))}

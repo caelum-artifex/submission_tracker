@@ -3,6 +3,7 @@
 import {
   Alert,
   Box,
+  Button,
   Card,
   Chip,
   CircularProgress,
@@ -25,7 +26,7 @@ import {
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import NoteOutlinedIcon from '@mui/icons-material/NoteOutlined';
 import SearchIcon from '@mui/icons-material/Search';
-import Link from 'next/link';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
@@ -58,7 +59,7 @@ const PRIORITY_COLORS: Record<string, 'error' | 'warning' | 'default'> = {
 
 function StatusChip({ status }: { status: SubmissionStatus }) {
   const label = STATUS_OPTIONS.find((o) => o.value === status)?.label ?? status;
-  return <Chip label={label} color={STATUS_COLORS[status]} size="small" />;
+  return <Chip label={label} color={STATUS_COLORS[status]} size="small" sx={{ fontWeight: 600 }} />;
 }
 
 function PriorityChip({ priority }: { priority: string }) {
@@ -88,13 +89,30 @@ function SkeletonRows() {
   );
 }
 
-function SubmissionRow({ row }: { row: SubmissionListItem }) {
+function SubmissionRow({
+  row,
+  onOpen,
+}: {
+  row: SubmissionListItem;
+  onOpen: (id: number) => void;
+}) {
   return (
     <TableRow
       hover
-      component={Link}
-      href={`/submissions/${row.id}`}
-      sx={{ cursor: 'pointer', textDecoration: 'none', '& td': { verticalAlign: 'middle' } }}
+      tabIndex={0}
+      onClick={() => onOpen(row.id)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onOpen(row.id);
+        }
+      }}
+      sx={{
+        cursor: 'pointer',
+        '& td': { verticalAlign: 'middle' },
+        '&:hover': { bgcolor: 'action.hover' },
+        '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: -2 },
+      }}
     >
       <TableCell>
         <Typography variant="body2" fontWeight={600}>
@@ -135,13 +153,16 @@ function SubmissionRow({ row }: { row: SubmissionListItem }) {
         </Stack>
       </TableCell>
       <TableCell>
-        <Typography variant="body2" color="text.secondary">
-          {new Date(row.createdAt).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </Typography>
+        <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+          <Typography variant="body2" color="text.secondary">
+            {new Date(row.createdAt).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </Typography>
+          <ArrowForwardIcon fontSize="small" sx={{ color: 'text.disabled' }} />
+        </Stack>
       </TableCell>
     </TableRow>
   );
@@ -150,6 +171,7 @@ function SubmissionRow({ row }: { row: SubmissionListItem }) {
 export default function SubmissionsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const openSubmission = useCallback((id: number) => router.push(`/submissions/${id}`), [router]);
 
   const status = (searchParams.get('status') ?? '') as SubmissionStatus | '';
   const brokerId = searchParams.get('brokerId') ?? '';
@@ -195,91 +217,96 @@ export default function SubmissionsContent() {
   return (
     <Container maxWidth="xl" sx={{ py: 5 }}>
       <Stack spacing={4}>
-        <Box>
+        <Box display="flex" justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} gap={2}>
           <Typography variant="h4" component="h1" fontWeight={700}>
             Submissions
           </Typography>
-          <Typography color="text.secondary" mt={0.5}>
-            Browse and filter incoming broker-submitted opportunities.
-          </Typography>
+          <Chip
+            label={submissionsQuery.data ? `${submissionsQuery.data.count} total` : 'Loading...'}
+            color="primary"
+            variant="outlined"
+            size="small"
+          />
         </Box>
+        <Typography color="text.secondary" mt={0.5}>
+          Browse and filter incoming broker-submitted opportunities.
+        </Typography>
+        <Typography variant="caption" color="text.secondary" mt={0.25} display="block">
+          Tip: click any row to open the full submission details.
+        </Typography>
+      </Box>
 
-        {/* Filter bar */}
-        <Card variant="outlined" sx={{ p: 2 }}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" flexWrap="wrap">
-            <TextField
-              select
-              label="Status"
-              value={status}
-              onChange={(e) => updateParams({ status: e.target.value })}
-              size="small"
-              sx={{ minWidth: 160 }}
-            >
-              {STATUS_OPTIONS.map((option) => (
-                <MenuItem key={option.value || 'all'} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
+      {/* Filter bar */}
+      <Card variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" flexWrap="wrap">
+          <TextField
+            select
+            label="Status"
+            value={status}
+            onChange={(e) => updateParams({ status: e.target.value })}
+            size="small"
+            sx={{ minWidth: 170, bgcolor: 'background.paper' }}
+          >
+            {STATUS_OPTIONS.map((option) => (
+              <MenuItem key={option.value || 'all'} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
 
-            <TextField
-              select
-              label="Broker"
-              value={brokerId}
-              onChange={(e) => updateParams({ brokerId: e.target.value })}
-              size="small"
-              sx={{ minWidth: 200 }}
-              disabled={brokerQuery.isLoading}
-              InputProps={
-                brokerQuery.isLoading
-                  ? {
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <CircularProgress size={16} />
-                        </InputAdornment>
-                      ),
-                    }
-                  : undefined
-              }
-            >
-              <MenuItem value="">All brokers</MenuItem>
-              {brokerQuery.data?.map((broker) => (
-                <MenuItem key={broker.id} value={String(broker.id)}>
-                  {broker.name}
-                </MenuItem>
-              ))}
-            </TextField>
+          <TextField
+            select
+            label="Broker"
+            value={brokerId}
+            onChange={(e) => updateParams({ brokerId: e.target.value })}
+            size="small"
+            sx={{ minWidth: 220, bgcolor: 'background.paper' }}
+            disabled={brokerQuery.isLoading}
+            InputProps={
+              brokerQuery.isLoading
+                ? {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <CircularProgress size={16} />
+                      </InputAdornment>
+                    ),
+                  }
+                : undefined
+            }
+          >
+            <MenuItem value="">All brokers</MenuItem>
+            {brokerQuery.data?.map((broker) => (
+              <MenuItem key={broker.id} value={String(broker.id)}>
+                {broker.name}
+              </MenuItem>
+            ))}
+          </TextField>
 
-            <TextField
-              label="Search company"
-              value={companySearch}
-              onChange={(e) => updateParams({ companySearch: e.target.value })}
-              size="small"
-              sx={{ minWidth: 220 }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              placeholder="Company name…"
-            />
+          <TextField
+            label="Search company"
+            value={companySearch}
+            onChange={(e) => updateParams({ companySearch: e.target.value })}
+            size="small"
+            sx={{ minWidth: 260, bgcolor: 'background.paper' }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            placeholder="Company name…"
+          />
 
-            {hasFilters && (
-              <Typography
-                variant="body2"
-                color="primary"
-                sx={{ cursor: 'pointer', textDecoration: 'underline', whiteSpace: 'nowrap' }}
-                onClick={() => router.push('/submissions')}
-              >
-                Clear filters
-              </Typography>
-            )}
-          </Stack>
-        </Card>
+          {hasFilters && (
+            <Button variant="text" size="small" onClick={() => router.push('/submissions')}>
+              Clear filters
+            </Button>
+          )}
+        </Stack>
+      </Card>
 
         {/* Results */}
         <Box>
@@ -297,7 +324,7 @@ export default function SubmissionsContent() {
             </Typography>
           )}
 
-          <Card variant="outlined" sx={{ overflow: 'hidden' }}>
+          <Card variant="outlined" sx={{ overflow: 'hidden', borderRadius: 2 }}>
             <TableContainer>
               <Table size="small">
                 <TableHead>
@@ -316,7 +343,7 @@ export default function SubmissionsContent() {
 
                   {!submissionsQuery.isLoading &&
                     submissionsQuery.data?.results.map((row) => (
-                      <SubmissionRow key={row.id} row={row} />
+                      <SubmissionRow key={row.id} row={row} onOpen={openSubmission} />
                     ))}
 
                   {!submissionsQuery.isLoading && submissionsQuery.data?.results.length === 0 && (

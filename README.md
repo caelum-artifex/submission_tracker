@@ -90,6 +90,7 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py seed_submissions  # optional but recommended
 # add --force to rebuild the generated sample data
+python manage.py test submissions
 python manage.py runserver 0.0.0.0:8000
 ```
 
@@ -104,6 +105,21 @@ npm run dev
 ```
 
 Visit `http://localhost:3000/submissions` to start building.
+
+## Automated Tests
+
+Targeted backend API tests are included in `backend/submissions/tests.py` to validate:
+
+- `GET /api/brokers/` returns a flat (non-paginated) broker list for dropdown usage.
+- `GET /api/submissions/` filtering by `status`, `brokerId`, `companySearch`, and `hasDocuments`.
+- `GET /api/submissions/<id>/` returns related `contacts`, `documents`, and `notes`.
+
+Run tests with:
+
+```bash
+cd backend
+python manage.py test submissions
+```
 
 ## Development Workflow
 
